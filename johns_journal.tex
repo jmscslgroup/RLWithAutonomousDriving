@@ -1,0 +1,100 @@
+\documentclass{article}
+\begin{document}
+
+\title{Research Paper Journal}
+\author{John Nguyen}
+\date{Last Update: 6/10}
+\maketitle
+
+\subsection*{Robust Reinforcement Learning for Autonomous Driving} 
+
+\textbf{Novel Contribution:} \underline{Actor and multi-step critic model on a complex task (autonomous driving)}
+
+
+\begin{itemize}
+	\item Deep RL algorithm embedding actor critic architecture with multi-step returns
+	
+	\begin{itemize}
+		\item actor critic architecture:
+		\begin{enumerate}
+			\item actor: the policy; agent
+			\item critic: the value function
+			\item Purpose is to reduce variance of policy gradient (formalizes trial and error choices)
+		\end{enumerate}
+		
+		\item multi-step returns
+		
+		\begin{enumerate}
+			\item Tempoeral difference update to control adn guide exploration
+			\item ? (in normal words, what is "multi-step returns"?
+		\end{enumerate}
+		
+	\end{itemize}	
+	
+	\item Improved actor and critic model using multi-step returns to obtain (marginally? [reviewer's notes]) better results than standard RL/
+	
+	\item *Model faced certain vulnerabilities when faced with unseen (not observable? not seen before inputs?)
+	
+	\begin{itemize}
+		\item Human behavior, diversity of driving styles, complexity of scene perception
+	\end{itemize}
+	
+	\item TODO List
+	
+	\begin{itemize}
+		\item Test out other RL methods, such as deep Q-learning, Trust Region Policy Optimization, on other complex tasks.
+		\item Impact of non-stationary environments on RL with multi-task learning problems. (Environment changes with respect to some probability distribution)
+		\item Apply Adaptive Dynamic Programming (RL + Dynamic Programming); apporximate the dynamic programming solutions by estimating the cost function. 
+		\item *Conext aware and meta learning strategies; generalizable and fast adapting algorithms (see Santaro et al. 2016; Ravi and Larochelle, 2017)
+	\end{itemize}
+	
+	\item Time Differential (TD) Learning
+	\begin{itemize}
+		\item ? (what is this?)
+	\end{itemize}
+	
+	\item Actor
+	\begin{itemize}
+		\item Gradient generated to optimize policy
+		\item (+) Convergence (of learning) is guarenteed
+		\item (-) High variance $\rightarrow$ slow learning 
+	\end{itemize}
+	
+	\item Critic
+	\begin{itemize}
+		\item Appeoximates value function using TD variance
+		\item (+) Lower variance $\rightarrow$ faster learning
+		\item (-) Lack of reliable convergence and optimal solution may not exist.
+	\end{itemize}
+	
+	\item Actor-Critic: Combines actor and critic models to iteraively and simultaneously update the model.
+	
+	\item Other Actor-Critic algorithms mentioned:
+	\begin{itemize}
+		\item FACRLN: 1 neural network that approximates critic and actor
+		\item CACM: natural gradient for policy-critic algorithm
+		\item DPG: Learned value estimate to train deterministic policy.
+		\item A3C: Agents in parallel, data decorrelation and learning diversity
+	\end{itemize}
+	
+	\item The above algorithms have only been tested on simple tasks.
+	
+	\item Authors implement the A2C algorithm
+	
+	\item A2C usess the Markov Decision Model
+	
+	\item Authors only tested urban driving
+	
+	\item Multi-step returns critic guides with value function
+	
+	\item Authors only tested in 2 different environments, yet they claim "superior generalization" of n-step A2C over regular RL.
+	
+	
+	
+\end{itemize}
+
+\textbf{Review:} Value function, policy, gradient
+
+\subsection*{NEW PAPER} 
+
+\end{document}
