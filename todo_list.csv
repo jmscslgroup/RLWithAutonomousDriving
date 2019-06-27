@@ -1,0 +1,8 @@
+Task,Status,Who
+Adapting Q-learning algorithm,Not started,
+Adapting start_learning script,Not started,
+Create TaskEnvironment,Not started,
+Create Robot Environment,Not started,
+-> Finish gym environment,Not started,
+->-> Final all necessary python dependencies for setup.py,Not started,
+-> Set up robot environment,,
