@@ -1,0 +1,35 @@
+# CMake generated Testfile for 
+# Source directory: /home/reu-cat/catvehicle_ws/src
+# Build directory: /home/reu-cat/catvehicle_ws/build
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.
+subdirs("gtest")
+subdirs("turtlebot_create/create_description")
+subdirs("turtlebot_create/create_driver")
+subdirs("sicktoolbox")
+subdirs("turtlebot/turtlebot")
+subdirs("turtlebot/turtlebot_bringup")
+subdirs("turtlebot_create/turtlebot_create")
+subdirs("turtlebot/turtlebot_gazebo")
+subdirs("turtlebot/turtlebot_navigation_gazebo")
+subdirs("turtlebot/turtlebot_project")
+subdirs("turtlebot/turtlebot_rtab")
+subdirs("turtlebot/turtlebot_rviz_launchers")
+subdirs("cmdvel2gazebo")
+subdirs("open_ai_gym_construct/gym_construct")
+subdirs("turtlebot/multiple_kobukis")
+subdirs("obstaclestopper")
+subdirs("openai_ros/openai_ros")
+subdirs("stepvel")
+subdirs("control_toolbox")
+subdirs("turtlebot/follow_line_tc_pkg")
+subdirs("sicktoolbox_wrapper")
+subdirs("turtlebot_create/create_node")
+subdirs("openai_examples_projects/turtle2_openai_ros_example")
+subdirs("turtlebot/turtlebot_navigation")
+subdirs("turtlebot/turtlebot_teleop")
+subdirs("catvehicle")
+subdirs("openai_examples_projects/wamv_openai_ros_example")
+subdirs("turtlebot/kobuki_description")
+subdirs("turtlebot/turtlebot_description")
