@@ -11,14 +11,17 @@ from gym.envs.registration import register
 import copy
 import math
 import os
-# Need to import .msg associated with joint#_velocity_controller
-from sensor_msgs.msg import JointState
+# I will assuem joint#_velocity_controller is from sensor_msgs.msg
+from sensor_msgs.msg import JointState, joint1_velocity_controller, joint2_velocity_controller, front_left_steering_position_controller, front_right_steering_position_controller
 from std_msgs.msg import Float64
 from gazebo_msgs.srv import SetLinkState
 from gazebo_msgs.msg import LinkState
 from rosgraph_msgs.msg import Clock
 from openai_ros import robot_gazebo_env
 
+
+# TODO:
+#   1. Import .msg associated with joint1_velocity_controller
 
 class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
     """Superclass for all Robot environments.
@@ -59,31 +62,35 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         # These 4 publishers control the 4 wheels of the car
         self.publishers_array = []
         
-        self._bl = rospy.Publisher("/catvehicle/joint1_velocity_controller/command", Float32, self.back_left_vel)
-        self._br = rospy.Publisher("/catvehicle/joint2_velocity_controller/command", Float32, self.back_right_vel)
-        self._fl = rospy.Publisher("/catvehicle/front_left_steering_position_controller/command", Float 32, self.front_left_steering)
-        self._fr = rospy.Publisher("/catvehicle/front_right_steering_position_controller/command", Float 32, self.front_right_steering)
+        #self._bl = rospy.Publisher("/catvehicle/joint1_velocity_controller/command", Float32, self.back_left_vel)
+        #self._br = rospy.Publisher("/catvehicle/joint2_velocity_controller/command", Float32, self.back_right_vel)
+        #self._fl = rospy.Publisher("/catvehicle/front_left_steering_position_controller/command", Float 32, self.front_left_steering)
+        #self._fr = rospy.Publisher("/catvehicle/front_right_steering_position_controller/command", Float 32, self.front_right_steering)
         
-        self.publishers_array.append(self._br)
-        self.publishers_array.append(self._bl)
-        self.publishers_array.append(self._fr)
-        self.publishers_array.append(self._fl)
+        self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        
+        #self.publishers_array.append(self._br)
+        #self.publishers_array.append(self._bl)
+        #self.publishers_array.append(self._fr)
+        #self.publishers_array.append(self._fl)
         
         rospy.Subscriber("/catvehicle/distanceEstimatorSteeringBased/dist", Float32, self.dist)
         rospy.Subscriber("/catvehicle/distanceEstimatorSteeringBased/angle", Float32, self.angle)
-        rospy.Subscriber("/catvehicle/joint_states", JointState, self.joints_callback)
+        #rospy.Subscriber("/catvehicle/joint_states", JointState, self.joints_callback)
         
         
         
-        self.controllers_list = ['joint1_velocity_controller', 
-                                 'joint2_velocity_controller',  
-                                 'front_left_steering_position_controller',
-                                 'front_right_steering_position_controller',  
-                                 'joint_state_controller']
+        #self.controllers_list = ['joint1_velocity_controller', 
+        #                         'joint2_velocity_controller',  
+        #                         'front_left_steering_position_controller',
+        #                         'front_right_steering_position_controller',  
+        #                         'joint_state_controller']
+        
+        self.controllers_list = []
 
         self.robot_name_space = "catvehicle_v0"
 
-        reset_controls_bool = True
+        self.reset_controls = True
         
         # Seed the environment
         self._seed()
@@ -115,7 +122,8 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         
         self._check_dist_ready()
         self._check_angle_ready()
-        self._check_joint_states_ready()
+        #self._check_joint_states_ready()
+        self._check_cmd_vel_pub()
         
         return True
         
@@ -164,11 +172,23 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
             except:
                 rospy.logerr("Current catvehicle_v0/joint_states not ready yet, retrying for getting joint_states")
                 
+    def _check_cmd_vel_pub():
+        rate = rospy.Rate(10)  # 10hz
+        while self._cmd_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():
+            rospy.logdebug("No susbribers to _cmd_vel_pub yet so we wait and try again")
+            try:
+                rate.sleep()
+            except rospy.ROSInterruptException:
+                # This is to avoid error when world is rested, time when backwards.
+                pass
+        rospy.logdebug("_cmd_vel_pub Publisher Connected")
+                
      # Check that all publishers are working
-     def check_publishers_connection(self):
+     def _check_publishers_connection(self):
         """
         Checks that all the publishers are working
         :return:
+        """
         """
         rate = rospy.Rate(10)  # 10hz; HOW DOES THIS WORK FOR CATVEHICLE/
         while (self._br.get_num_connections() == 0 and not rospy.is_shutdown()):
@@ -206,6 +226,16 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
                 # This is to avoid error when world is rested, time when backwards.
                 pass
         rospy.logdebug("_fl Publisher Connected")
+        """
+        
+        while (self._cmd_vel_pub.get_num_connections() == 0 and not rospy.is_shutdown()):
+            rospy.logdebug("No susbribers to self._cmd_vel_pub yet so we wait and try again")
+            try:
+                rate.sleep()
+            except rospy.ROSInterruptException:
+                # This is to avoid error when world is rested, time when backwards.
+                pass
+        rospy.logdebug("self._cmd_vel_pub Publisher Connected")
 
         rospy.logdebug("All Publishers READY")
         
@@ -247,3 +277,62 @@ class MyRobotEnv(robot_gazebo_env.RobotGazeboEnv):
         
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
+    
+    def move_base(self, linear_speed, angular_speed, epsilon=0.05, update_rate=10, min_laser_distance=-1):
+        """
+        It will move the base based on the linear and angular speeds given.
+        It will wait untill those twists are achived reading from the odometry topic.
+        :param linear_speed: Speed in the X axis of the robot base frame
+        :param angular_speed: Speed of the angular turning of the robot base frame
+        :param epsilon: Acceptable difference between the speed asked and the odometry readings
+        :param update_rate: Rate at which we check the odometry.
+        :return: 
+        """
+        cmd_vel_value = Twist() # Describes linear motion and angular motion of robot
+        cmd_vel_value.linear.x = linear_speed
+        cmd_vel_value.angular.z = angular_speed
+        rospy.logdebug("CATVehicle Base Twist Cmd>>" + str(cmd_vel_value))
+        self._check_publishers_connection()
+        self._cmd_vel_pub.publish(cmd_vel_value)
+        time.sleep(0.2)
+        #time.sleep(0.02)
+        """
+        self.wait_until_twist_achieved(cmd_vel_value,
+                                        epsilon,
+                                        update_rate,
+                                        min_laser_distance)
+        """
+        
+    def has_crashed(self, min_distance):
+        """
+        It states based on the laser scan if the robot has crashed or not.
+        Crashed means that the minimum laser reading is lower than the
+        min_laser_distance value given.
+        If min_laser_distance == -1, it returns always false, because its the way
+        to deactivate this check.
+        """
+        robot_has_crashed = False
+        
+        if min_distance != -1:
+            dist = self.get_dist()
+            if item == float ('Inf') or numpy.isinf(item):
+                pass
+            elif numpy.isnan(item):
+               pass
+            else:
+                # Has a Non Infinite or Nan Value
+                if (dist < min_laser_distance):
+                    rospy.logerr("CATVehicle HAS CRASHED >>> item=" + str(dist)+"< "+str(min_laser_distance))
+                        robot_has_crashed = True
+                        break
+        return robot_has_crashed
+        
+    def get_dist():
+        return self.dist
+        
+    def get_angle():
+        return self.angle
+        
+    
+    
+    
