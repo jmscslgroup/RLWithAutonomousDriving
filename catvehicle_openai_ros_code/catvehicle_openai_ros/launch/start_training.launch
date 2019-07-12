@@ -1,8 +1,0 @@
-<launch>
-    <!-- This version uses the openai_ros environments -->
-    <!-- loads parameters for learning .py file -->
-    <rosparam command="load" file="$(find catvehicle_openai_ros)/config/turtlebot2_openai_qlearn_params.yaml" />
-    <!-- Launch the training system -->
-    <!-- runs learning algorithm -->
-    <node pkg="catvehicle_openai_ros" name="catvehicle_wall" type="start_qlearning.py" output="screen"/>
-</launch>
