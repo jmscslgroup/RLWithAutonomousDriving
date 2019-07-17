@@ -13,6 +13,34 @@
       </attenuation>
       <direction>-0.5 0.1 -0.9</direction>
     </light>
+    <light name='reward1' type='spot'>
+      <cast_shadows>0</cast_shadows>
+      <pose>10 0 1 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='reward2' type='spot'>
+      <cast_shadows>0</cast_shadows>
+      <pose>15 0 1 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='reward3' type='spot'>
+      <cast_shadows>0</cast_shadows>
+      <pose>25 0 1 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='reward4' type='spot'>
+      <cast_shadows>0</cast_shadows>
+      <pose>30 0 1 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
     <model name='ground_plane'>
       <static>1</static>
       <link name='link'>
@@ -82,7 +110,7 @@
     <model name='brick_box_3x1x3'>
       <static>1</static>
       <link name='chassis'>
-        <pose>10 0 1.5 0 0 1.57</pose>
+        <pose>0 0 1.5 0 0 1.57</pose>
         <collision name='collision'>
           <geometry>
             <box>
@@ -123,7 +151,7 @@
         <kinematic>0</kinematic>
         <gravity>1</gravity>
       </link>
-      <pose>10 0 0 0 0 0</pose>
+      <pose>20 0 0 0 0 0</pose>
     </model>
     <model name='brick_box_3x1x3_0'>
       <static>1</static>
@@ -169,7 +197,7 @@
         <kinematic>0</kinematic>
         <gravity>1</gravity>
       </link>
-      <pose>29 0 0 0 0 1.57</pose>
+      <pose>40 0 0 0 0 1.57</pose>
     </model>
     <model name='brick_box_3x1x3_2'>
       <static>1</static>
@@ -178,7 +206,7 @@
         <collision name='collision'>
           <geometry>
             <box>
-              <size>45 1 3</size>
+              <size>58 1 3</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -196,7 +224,7 @@
           <geometry>
             <mesh>
               <uri>model://brick_box_3x1x3/meshes/simple_box.dae</uri>
-              <scale>45 1 3</scale>
+              <scale>58 1 3</scale>
             </mesh>
           </geometry>
           <material>
@@ -215,7 +243,7 @@
         <kinematic>0</kinematic>
         <gravity>1</gravity>
       </link>
-      <pose>5 20 0 0 0 0</pose>
+      <pose>11 20 0 0 0 0</pose>
     </model>
     
     <model name='brick_box_3x1x3_10'>
@@ -271,7 +299,7 @@
         <collision name='collision'>
           <geometry>
             <box>
-              <size>45 1 3</size>
+              <size>58 1 3</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -289,7 +317,7 @@
           <geometry>
             <mesh>
               <uri>model://brick_box_3x1x3/meshes/simple_box.dae</uri>
-              <scale>45 1 3</scale>
+              <scale>58 1 3</scale>
             </mesh>
           </geometry>
           <material>
@@ -308,7 +336,7 @@
         <kinematic>0</kinematic>
         <gravity>1</gravity>
       </link>
-      <pose>5 -20 0 0 0 0</pose>
+      <pose>11 -20 0 0 0 0</pose>
     </model>
     <gui fullscreen='0'>
       <camera name='user_camera'>

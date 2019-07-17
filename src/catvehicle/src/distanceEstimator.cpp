@@ -120,8 +120,8 @@ int main( int argc, char **argv )
 	n.param("scan_topic", scan_topic, std::string("/catvehicle/front_laser_points"));
 //	n.param("angle_min", angle_min, -M_PI/32.0f);
 //	n.param("angle_max", angle_max, M_PI/32.0f);
-	n.param("angle_min", angle_min, -0.1);
-	n.param("angle_max", angle_max, 0.1);
+	n.param("angle_min", angle_min, -0.3);
+	n.param("angle_max", angle_max, 0.3);
 
     ROS_INFO_STREAM("Node namespace is " << ros::this_node::getNamespace());
     ROS_INFO_STREAM("Node name is " << ros::this_node::getName( ) );

@@ -37,6 +37,8 @@ class run_sim:
 
         #Object to launch empty world; parent roslaunch type
         launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/reu-cat/catvehicle_ws/src/catvehicle/launch/catvehicle_brickwall.launch"])
+        
+        # TODO: make .py script that trains for 1 episode.
 
         #Object to spawn catvehicle in the empty world
         
@@ -51,20 +53,10 @@ class run_sim:
         self.launchspawn.append(roslaunch.parent.ROSLaunchParent(uuid, spawn_file[0]))
         """
         
-        '''Launch the empty world'''
+        '''Launch the brickwall world'''
         launch.start()
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        print('Empty world launched.')
+        print('Brickwall world launched.')
         time.sleep(3)
         '''
         """ Spawn the world, car and actor """
@@ -73,7 +65,7 @@ class run_sim:
             time.sleep(2)
         '''
 
-    def signal_handler(self, sig, frame):
+    def signal_handler(self, sig):
         print('You pressed Ctrl+C!')
         print('############################################')
         """
@@ -81,7 +73,8 @@ class run_sim:
         for n in range(len(self.launchspawn)):
             self.launchspawn[n].shutdown()
         """
-
+        
+        print(str(sig))
         print('Now killing roscore')
         #kill the child process of roscore
         try:
@@ -107,7 +100,7 @@ class run_sim:
 
         sys.exit(0)
 
-
+'''
 def main(argv):
     cl = run_sim()
 
@@ -120,4 +113,4 @@ def main(argv):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
+'''
