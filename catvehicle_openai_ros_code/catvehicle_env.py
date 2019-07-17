@@ -227,9 +227,10 @@ class CATVehicleEnv(robot_gazebo_env.RobotGazeboEnv):
         rospy.logwarn("CATVehicle Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
-        time.sleep(0.01)
+        time.sleep(0.01) # This is the timespan per timestep?
         #time.sleep(0.02)
-        """ # Implement this later?
+        
+                """ # Implement this later?
         self.wait_until_twist_achieved(cmd_vel_value,
                                         epsilon,
                                         update_rate,
