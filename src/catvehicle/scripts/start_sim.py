@@ -252,7 +252,7 @@ class start_sim:
         self._cmd_vel_pub.publish(cmd_vel_value)
         
     def load_params(self):
-        with open('start_sim_params.yaml', 'r') as f:
+        with open('rl_params.yaml', 'r') as f:
             params = yaml.load(f)
 
         # Don't think I need this
@@ -265,10 +265,10 @@ class start_sim:
         
         # Sensors and input data
         self.min_range = params['catvehicle']['min_range']
-        #self.max_sensor_value = params['catvehicle']['max_sensor_value']
-        #self.min_sensor_value = params['catvehicle']['min_sensor_value']
-        #self.min_angle_value = params['catvehicle']['min_angle_value']
-        #self.max_angle_value = params['catvehicle']['max_angle_value']
+        self.max_sensor_value = params['catvehicle']['max_sensor_value']
+        self.min_sensor_value = params['catvehicle']['min_sensor_value']
+        self.min_angle_value = params['catvehicle']['min_angle_value']
+        self.max_angle_value = params['catvehicle']['max_angle_value']
 
         # Rewards
         self.forwards_reward = params['catvehicle']['forwards_reward']
@@ -380,11 +380,14 @@ class start_sim:
 
     def step(self, action):
         self.do_action(action)
-        time.sleep(0.1) # Current timestep
+        time.sleep(0.1) # Current timestep length
         obs = self._get_obs()
         done = self.has_crashed(self.min_range)
         reward = self._compute_reward(obs, done)
         complete = self.is_complete()
+
+        if complete == len(self.path_array):
+            done = True
         
 
         return obs, reward, done, complete

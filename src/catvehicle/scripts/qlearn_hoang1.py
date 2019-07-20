@@ -1,5 +1,4 @@
 import random
-import gym
 import numpy as np
 from keras.optimizers import Adam
 from keras.models import Sequential      # One layer after the other

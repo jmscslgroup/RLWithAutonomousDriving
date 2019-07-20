@@ -1,21 +1,15 @@
 #!/usr/bin/env python
 
+import pickle
 import yaml
 import sys
 import numpy as np
 import time
 import qlearn_hoang1
-from gym import wrappers
 # ROS packages required
 import rospy
 import rospkg
 import start_sim
-
-#Hoang import
-#from keras.models import Sequential      # One layer after the other
-#from keras.layers import Dense, Flatten  # Dense layers are fully connected layers, Flatten layers flatten out multidimensional inputs
-#from collections import deque            # For storing moves 
-import random
 
 # for any function that calls start_qlearning.py, this will be the main
 
@@ -23,7 +17,7 @@ import random
 
 
 # Load the yaml file
-with open('begin_qlearn_params.yaml', 'r') as f:
+with open('rl_params.yaml', 'r') as f:
     params = yaml.load(f)
 
 
@@ -48,7 +42,7 @@ BATCH_SIZE = params['catvehicle']['BATCH_SIZE']
 observation_space = 2
 action_space = 3
 
-#initialize Deep Q learning
+#initialize Deep Q learning neural network
 deepQlearning = qlearn_hoang1.QLearn(gamma,LEARNING_RATE,MEMORY_SIZE,EXPLORATION_MAX,EXPLORATION_MIN,EXPLORATION_DECAY,BATCH_SIZE,  observation_space, action_space)
 run = 0
 
@@ -68,12 +62,12 @@ for x in range(nepisodes):
     for i in range(nsteps):
         rospy.logwarn('ON ITERACTION: '+str(i))
         action = deepQlearning.act(state)                         			#decide action to take: explore or exploit
-        state_next, reward, terminal, complete = sim.step(action)
+        state_next, reward, done, complete = sim.step(action)
         state_next = np.reshape(state_next, [1, observation_space])			#take next state
-        deepQlearning.remember(state, action, reward, state_next, terminal)		#store next state
+        deepQlearning.remember(state, action, reward, state_next, done)		#store next state
         state = state_next
         reward_cumulative += reward							#accumulate rewards
-        if terminal:
+        if done:
             print "Run: " + str(run) + ", exploration: " + str(deepQlearning.exploration_rate) + ", score: " + str(reward_cumulative) + ", # Spots: ", str(complete)
             break
         deepQlearning.experience_replay()						#update reward using experience replay
@@ -86,6 +80,4 @@ for x in range(nepisodes):
 
 # Saves NN to a file, which can be loaded using load_model.py
 deepQlearning.save()
-
-
-
+pickle.dump(deepQlearning, open("picked_nn.p", "wb"))
