@@ -22,12 +22,26 @@
     </light>
     <light name='reward2' type='spot'>
       <cast_shadows>0</cast_shadows>
-      <pose>25 0 1 0 0 0</pose>
+      <pose>20 10 1 0 0 0</pose>
       <diffuse>1 1 1 1</diffuse>
       <specular>0.1 0.1 0.1 1</specular>
       <direction>0 0 -1</direction>
     </light>
     <light name='reward3' type='spot'>
+      <cast_shadows>0</cast_shadows>
+      <pose>20 -10 1 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='reward4' type='spot'>
+      <cast_shadows>0</cast_shadows>
+      <pose>25 0 1 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='reward5' type='spot'>
       <cast_shadows>0</cast_shadows>
       <pose>30 0 1 0 0 0</pose>
       <diffuse>1 1 1 1</diffuse>

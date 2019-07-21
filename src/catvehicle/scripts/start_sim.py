@@ -40,7 +40,7 @@ class start_sim:
         roslaunch.configure_logging(uuid)
 
         #Object to launch empty world; parent roslaunch type
-        self.launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/nguy2539/catvehicle_ws/src/catvehicle/launch/catvehicle_brickwall.launch"])
+        self.launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/nguy2539/catvehicle_ws/src/catvehicle/launch/catvehicle_collision.launch"])
         
 
         #Object to spawn catvehicle in the empty world
@@ -58,6 +58,8 @@ class start_sim:
         
         '''Launch the brickwall world'''
         self.launch.start()
+
+        time.sleep(30)
         
         print('Brickwall world launched.')
         '''
@@ -70,8 +72,8 @@ class start_sim:
         self.io_setup()
         self.load_params()
 
-        # init env vars
-        self.path_array = [[10, 0, 0], [25, 0, 0], [30, 0, 0]]
+        # If the car gets close to here, it gets reward
+        self.path_array = [[10, 0, 0], [20, 10, 0], [20, -10, 0], [25, 0, 0], [30, 0, 0]]
         self.cumulated_reward = 0
 
 
@@ -119,6 +121,7 @@ class start_sim:
         call(["pkill", "gzclient"])
 
     def io_setup(self):
+        print("SUBSCRIBER/PUBLISHER SETUP NOW")
         self.distsb_sub = rospy.Subscriber("/catvehicle/distanceEstimatorSteeringBased/dist", Float64, self._distsb_callback)
         self.anglesb_sub = rospy.Subscriber("/catvehicle/distanceEstimatorSteeringBased/angle", Float64, self._anglesb_callback)
         self.dist_sub = rospy.Subscriber("/catvehicle/distanceEstimator/dist", Float32, self._dist_callback)
@@ -127,7 +130,7 @@ class start_sim:
 
         self._cmd_vel_pub = rospy.Publisher('/catvehicle/cmd_vel', Twist, queue_size=10)
 
-        self._check_all_sensors_ready()
+        self._check_all_systems_ready()
 
     def _check_all_systems_ready(self):
         """
@@ -237,13 +240,8 @@ class start_sim:
 
     def move_car(self, linear_speed, angular_speed, epsilon=0.05, update_rate=10, min_laser_distance=-1):
         """
-        It will move the car based on the linear and angular speeds given.
-        (no) It will wait untill those twists are achived reading from the odometry topic.
-        :param linear_speed: Speed in the X axis of the robot base frame
-        :param angular_speed: Speed of the angular turning of the robot base frame
-        :param epsilon: Acceptable difference between the speed asked and the odometry readings
-        :param update_rate: Rate at which we check the odometry.
-        :return: 
+        linear speed: speed car drives when going forward
+        angular_speed: speed car goes when turning
         """
         cmd_vel_value = Twist() # Describes linear motion and angular motion of robot
         cmd_vel_value.linear.x = linear_speed
@@ -367,7 +365,7 @@ class start_sim:
                 self.path_array[i][2] = 1
                 reward += self.path_reward
 
-        if self.is_complete() == len(self.path_array):
+        if self.is_complete() == (len(self.path_array) - 1):
             reward += self.complete_reward
         
 
