@@ -53,7 +53,7 @@ class QLearn:
         self.exploration_rate = max(self.EXPLORATION_MIN, self.exploration_rate)
 
     def save(self):
-	    self.model.save('/home/nguy2539/catvehicle_ws')
+	    self.model.save('/home/nguy2539/catvehicle_ws/trained_nn.h5')
 	    print "model saved"
 
 

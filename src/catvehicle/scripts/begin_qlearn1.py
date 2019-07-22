@@ -10,6 +10,7 @@ import qlearn_hoang1
 import rospy
 import rospkg
 import start_sim
+import csv
 
 # for any function that calls start_qlearning.py, this will be the main
 
@@ -45,6 +46,8 @@ action_space = 3
 #initialize Deep Q learning neural network
 deepQlearning = qlearn_hoang1.QLearn(gamma,LEARNING_RATE,MEMORY_SIZE,EXPLORATION_MAX,EXPLORATION_MIN,EXPLORATION_DECAY,BATCH_SIZE,  observation_space, action_space)
 run = 0
+scores = []
+iterations = []
 
 sim = start_sim.start_sim()
 
@@ -67,17 +70,31 @@ for x in range(nepisodes):
         deepQlearning.remember(state, action, reward, state_next, done)		#store next state
         state = state_next
         reward_cumulative += reward							#accumulate rewards
+        if (i == (nsteps - 1)) and (done != True):
+            done = True
+            reward -= 1000
         if done:
-            print "Run: " + str(run) + ", exploration: " + str(deepQlearning.exploration_rate) + ", score: " + str(reward_cumulative) + ", # Spots: ", str(complete)
+            print "Run: " + str(run) + ", exploration: " + str(deepQlearning.exploration_rate) + ", score: " + str(reward_cumulative) + ", # Spots: ", str(complete), "/10"
             break
         deepQlearning.experience_replay()						#update reward using experience replay
     
+    scores.append(reward_cumulative)
+    iterations.append(x)
+
     sim.signal_handler(2)
-    time.sleep(60)
-    #del sim
+    time.sleep(30)
+
+    deepQlearning.save()
+    pickle.dump(deepQlearning, open("picked_nn.p", "wb"))
+
+with open('scores.csv', 'wb') as myfile:
+    wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+    wr.writerow(scores)
+
+with open('iterations.csv', 'wb') as myfile:
+    wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+    wr.writerow(iterations)
 
 # TODO: 1. Save Neural Network. 2. Replay Neural Network to exploit n-times. 3. Record the exploitation. 4. Publish loss function
 
 # Saves NN to a file, which can be loaded using load_model.py
-deepQlearning.save()
-pickle.dump(deepQlearning, open("picked_nn.p", "wb"))

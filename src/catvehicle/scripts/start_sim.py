@@ -59,7 +59,7 @@ class start_sim:
         '''Launch the brickwall world'''
         self.launch.start()
 
-        time.sleep(30)
+        time.sleep(15)
         
         print('Brickwall world launched.')
         '''
@@ -73,7 +73,8 @@ class start_sim:
         self.load_params()
 
         # If the car gets close to here, it gets reward
-        self.path_array = [[10, 0, 0], [20, 10, 0], [20, -10, 0], [25, 0, 0], [30, 0, 0]]
+        self.path_array = [[5, 0, 0], [10, 0, 0], [12.5, 6.25, 0], [12.5, -6.25, 0], [20, 12.5, 0], [20, -12.5, 0], [25, 6.25, 0], [25, -6.25, 0], [27.5, 0, 0], [30, 0, 0], [35, 0, 0], [40, 0, 0], [45, 0, 0]]
+
         self.cumulated_reward = 0
 
 
@@ -85,7 +86,7 @@ class start_sim:
         self._cmd_vel_pub.unregister()
         self.odom_sub.unregister()
 
-        time.sleep(30)
+        time.sleep(10)
 
 
         print('CLOSING SIMULATION')
@@ -298,6 +299,8 @@ class start_sim:
             linear_speed = self.linear_turn_speed
             angular_speed = -1*self.angular_speed
             self.last_action = "TURN_RIGHT"
+
+        print("EXECUTING ACTION: ", self.last_action)
         
         # We tell TurtleBot2 the linear and angular speed to set to execute
         self.move_car( linear_speed,
@@ -365,7 +368,7 @@ class start_sim:
                 self.path_array[i][2] = 1
                 reward += self.path_reward
 
-        if self.is_complete() == (len(self.path_array) - 1):
+        if self.is_complete() == (len(self.path_array) - 3):
             reward += self.complete_reward
         
 
@@ -384,7 +387,7 @@ class start_sim:
         reward = self._compute_reward(obs, done)
         complete = self.is_complete()
 
-        if complete == len(self.path_array):
+        if complete == (len(self.path_array) - 3):
             done = True
         
 
