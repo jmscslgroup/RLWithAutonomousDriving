@@ -46,7 +46,7 @@ roslaunch catvehicle catvehicle_spawn.launch robot:=acar_sim X:=0 Y:=0 Z:=0 roll
 
  	  <arg name="paused" default="false"/>
  	  <arg name="use_sim_time" default="true"/>
- 	  <arg name="gui" default="true"/>
+ 	  <arg name="gui" default="false"/>
  	  <arg name="headless" default="false"/>
  	  <arg name="debug" default="false"/>
 
