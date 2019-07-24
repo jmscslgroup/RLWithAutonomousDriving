@@ -62,7 +62,7 @@ output="screen" ns="/$(arg robot_name)" args="joint1_velocity_controller joint2_
 </node>
 
 <!-- set up a static TF transform for publishing SLAM localization estimates wrt base_link -->
-<node pkg="tf" type="static_transform_publisher" name="base_link2slamodom_tf_$(arg robot_name)" 
+<node pkg="t2f" type="static_transform_publisher" name="base_link2slamodom_tf_$(arg robot_name)" 
     args="0 0 0 0 0 1 $(arg robot_name)/base_link $(arg robot_name)/slamodom 5" />
 
  
@@ -89,8 +89,8 @@ output="screen" ns="/$(arg robot_name)" args="joint1_velocity_controller joint2_
     <param name="scan_topic" value="/$(arg robot_name)/front_laser_points"/>
     <remap from="/$(arg robot_name)/distanceEstimator/dist" to="/$(arg robot_name)/distanceEstimator/dist" />
     <remap from="/$(arg robot_name)/distanceEstimator/angle" to="/$(arg robot_name)/distanceEstimator/angle" />
-     <param name="angle_min" value="-0.1"/>
-     <param name="angle_max" value="0.1"/>
+     <param name="angle_min" value="-0.79"/>
+     <param name="angle_max" value="0.79"/>
 
 </node>
 
