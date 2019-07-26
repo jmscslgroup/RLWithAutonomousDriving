@@ -4,7 +4,7 @@ import sys, math, time
 import numpy as np
 from std_msgs.msg import Float64, Float32
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseStamped
 import yaml
 
 class car_connection:
@@ -14,19 +14,27 @@ class car_connection:
         self.distsb_sub = rospy.Subscriber("/catvehicle/distanceEstimatorSteeringBased/dist", Float64, self._distsb_callback)
         self.anglesb_sub = rospy.Subscriber("/catvehicle/distanceEstimatorSteeringBased/angle", Float64, self._anglesb_callback)
         self.odom_sub = rospy.Subscriber("/catvehicle/odom", Odometry, self._odom_callback)
+        self.slamodom_sub = rospy.Subscriber("/slam_out_pose", PoseStamped, self._slamodom_callback)
 
         self._cmd_vel_pub = rospy.Publisher('/catvehicle/cmd_vel', Twist, queue_size=10)
 
         self._check_all_systems_ready()
 
+        '''
         self.goal = [50, 0]
+        self.path = [[self.goal]]
+        '''
+
+        self.goal = [self.slamodom.pose.position.x + 50, self.slamodom.pose.position.y]
         self.path = [[self.goal]]
 
         self.linear_speed = 2
         self.turning_speed = 1
-        self.angular_speed = 0.4
+        self.angular_speed = 0.2
 
         self.epsilon = 3
+
+        self.old_dist = 0
 
         self.history = []
 
@@ -55,14 +63,18 @@ class car_connection:
         self.update_vals()
 
         while (self.euclid_distance(self.x1, self.y1, self.xn, self.yn) > self.epsilon):
-            i = 0
-            if (self.distsb.data < 15) and (abs(self.anglesb.data) < 0.6):
-                if self.anglesb.data < 0: # Obj on left, turn right
-                    print('1')
-                    self.avoid_obstacle_turn_right()
-                else:
-                    self.avoid_obstacle_turn_left()
-                    print('2')
+            if (self.distsb.data < 20) and (abs(self.distsb.data - self.old_dist) > 0.01):
+                self.old_dist = self.distsb.data
+                print(str(self.old_dist)+' '+str(self.distsb.data))
+                if (abs(self.anglesb.data) < 0.8):
+                    if self.anglesb.data < 0: # Obj on left, turn right
+                        print('1')
+                        self.avoid_obstacle_turn_right()
+                    else:
+                        self.avoid_obstacle_turn_left()
+                        print('2')
+                print('3')
+                self.move_car(self.linear_speed, 0)
             else:
                 print('5')
                 self.point_towards_wpt()
@@ -81,24 +93,30 @@ class car_connection:
 
         dx = math.cos(self.anglesb.data) * init_dist
 
-        while(abs(self.anglesb.data) < 0.6):
+        # Turn until object is out of sight
+        while(abs(self.anglesb.data) < 0.8):
             i += 1
             self.move_car(self.turning_speed, -1 * self.angular_speed)
 
+        # Go straight until adjacent to obstacle
         while(self.x1 < init_x + dx):
             j += 1
             self.move_car(self.linear_speed, 0)
 
-        for it in range(2 * i):
-            self.move_car(self.turning_speed, self.angular_speed)
-        
-        for jt in range(j):
-            self.move_car(self.linear_speed, 0)
+        if (self.distsb.data < 15) and (abs(self.anglesb.data) < 0.8):
+            # Readjust yaw
+            for it in range(2 * i):
+                self.move_car(self.turning_speed, self.angular_speed)
+            
+            # Readjust y value
+            for jt in range(j):
+                self.move_car(self.linear_speed, 0)
 
-        i = int(math.ceil(i/2))            
-        
-        for it in range(i):
-            self.move_car(self.turning_speed, self.angular_speed)
+            i = int(math.ceil(i/2))            
+            
+            # Straighten out yaw
+            for it in range(i):
+                self.move_car(self.turning_speed, self.angular_speed)
         
 
         return
@@ -111,7 +129,7 @@ class car_connection:
 
         dx = math.cos(self.anglesb.data) * init_dist
 
-        while(abs(self.anglesb.data) < 0.6):
+        while(abs(self.anglesb.data) < 0.8):
             i += 1
             self.move_car(self.turning_speed, self.angular_speed)
 
@@ -119,16 +137,18 @@ class car_connection:
             j += 1
             self.move_car(self.linear_speed, 0)
 
-        for it in range(2 * i):
-            self.move_car(self.turning_speed, -1 * self.angular_speed)
         
-        for jt in range(j):
-            self.move_car(self.linear_speed, 0)
+        if (self.distsb.data < 15) and (abs(self.anglesb.data) < 0.8):
+            for it in range(2 * i):
+                self.move_car(self.turning_speed, -1 * self.angular_speed)
+            
+            for jt in range(j):
+                self.move_car(self.linear_speed, 0)
 
-        i = int(math.ceil(i/2))            
-        
-        for it in range(i):
-            self.move_car(self.turning_speed, -1 * self.angular_speed)
+            i = int(math.ceil(i/2))            
+            
+            for it in range(i):
+                self.move_car(self.turning_speed, -1 * self.angular_speed)
         
 
 
@@ -155,9 +175,13 @@ class car_connection:
 
     def update_vals(self):
         self.quaternion2euler()
-
+        '''
         self.x1 = self.odom.pose.pose.position.x
         self.y1 = self.odom.pose.pose.position.y
+        '''
+
+        self.x1 = self.slamodom.pose.position.x
+        self.y1 = self.slamodom.pose.position.y
 
         # Gets most immediate waypoint
         self.next_waypoint = self.path[0][0]
@@ -180,10 +204,11 @@ class car_connection:
         if (abs(self.desired_yaw) - 1.57 < 0.1):
             if (self.yaw < 0):
                 self.desired_yaw = -1 * abs(self.desired_yaw)
-            else:
+            if self.yaw > 0:
                 self.desired_yaw = abs(self.desired_yaw)
 
-        self.quaternion2euler()
+        if self.y2 < self.y1:
+            self.desired_yaw = -1 * abs(self.desired_yaw)
 
         return
 
@@ -192,11 +217,17 @@ class car_connection:
         return math.sqrt((x1 - x2)**2 + (y1 - y2)**2) 
 
     def quaternion2euler(self):
-
+        '''
         x = self.odom.pose.pose.orientation.x
         y = self.odom.pose.pose.orientation.y
         z = self.odom.pose.pose.orientation.z
         w = self.odom.pose.pose.orientation.w
+        '''
+
+        x = self.slamodom.pose.orientation.x
+        y = self.slamodom.pose.orientation.y
+        z = abs(self.slamodom.pose.orientation.z)
+        w = self.slamodom.pose.orientation.w
 
         self.angles = []
 
@@ -217,16 +248,23 @@ class car_connection:
 
     def point_towards_wpt(self):
         # self.update_vals()
-        if (self.desired_yaw - self.yaw > 0.1): # Turn right
+        if (self.desired_yaw - self.yaw > 0.1): # Want to turn left
             print('adjusting from: '+str(self.yaw)+'\t to: '+str(self.desired_yaw))
             while (self.desired_yaw - self.yaw > 0.1):
                 self.move_car(self.turning_speed, self.angular_speed)
-        elif (self.desired_yaw - self.yaw < -0.1):
+        elif (self.desired_yaw - self.yaw < -0.1): # Want to turn right
             print('adjusting from: '+str(self.yaw)+'\t to: '+str(self.desired_yaw))
             while (self.desired_yaw - self.yaw < -0.1):
                 self.move_car(self.turning_speed, -1 * self.angular_speed)
         else:
             return
+
+    def print_slam_odom(self):
+        self._check_slamodom_ready()
+        #print(type(self.slamodom))
+        print(str(self.slamodom.pose.position.x))
+        print(str(self.slamodom.pose.position.y))
+        print(str(self.slamodom.pose.position.z))
 
     """
     These are the callback functions of subscribers
@@ -234,12 +272,15 @@ class car_connection:
 
     def _distsb_callback(self, data):
         self.distsb = data
-
+    
     def _anglesb_callback(self, data):
         self.anglesb = data
 
     def _odom_callback(self, data):
             self.odom = data
+
+    def _slamodom_callback(self, data):
+        self.slamodom = data
 
     """ 
     These functions check if subscribers/publishers are ready  
@@ -258,6 +299,7 @@ class car_connection:
         self._check_distsb_ready()
         self._check_anglesb_ready()
         self._check_odom_ready()
+        self._check_slamodom_ready()
             
         return True
 
@@ -301,7 +343,19 @@ class car_connection:
                 print("odom: " +  str(self.odom) + ", rospy.is_shutdown(): " + str(rospy.is_shutdown))
                 rospy.logerr("Current /catvehicle/odom not ready yet, retrying for getting odom")
 
-        return self.odom
+    def _check_slamodom_ready(self):
+        self.slamodom = None
+        rospy.logdebug("Waiting for /slam_out_pose to be READY...")
+        while self.slamodom is None and not rospy.is_shutdown():
+            try:
+                self.slamodom = rospy.wait_for_message("/slam_out_pose", PoseStamped, timeout=5.0)
+                rospy.logdebug("Current /slam_out_pose READY=>")
+
+            except:
+                print("slamodom: " +  str(self.slamodom) + ", rospy.is_shutdown(): " + str(rospy.is_shutdown))
+                rospy.logerr("Current /slam_out_pose not ready yet, retrying for getting slamodom")
+
+        return self.slamodom
 
     def _check_cmd_vel_pub(self):
         self.rate = rospy.Rate(10)  # 10hz
