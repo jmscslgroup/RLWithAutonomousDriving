@@ -1,8 +1,8 @@
-from car_connection2 import car_connection2
+from car_connection import car_connection
 import time
 import rospy
 
-control = car_connection2()
+control = car_connection()
 
 raw_input('Press enter to continue: ')
 

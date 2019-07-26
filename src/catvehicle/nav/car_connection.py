@@ -22,8 +22,8 @@ class car_connection:
         self.goal = [50, 0]
         self.path = [[self.goal]]
 
-        self.linear_speed = 20
-        self.turning_speed = 5
+        self.linear_speed = 2
+        self.turning_speed = 1
         self.angular_speed = 0.4
 
         self.epsilon = 3
@@ -56,7 +56,7 @@ class car_connection:
 
         while (self.euclid_distance(self.x1, self.y1, self.xn, self.yn) > self.epsilon):
             i = 0
-            if (self.distsb.data < 15) and (abs(self.anglesb.data) < 0.79):
+            if (self.distsb.data < 15) and (abs(self.anglesb.data) < 0.6):
                 if self.anglesb.data < 0: # Obj on left, turn right
                     print('1')
                     self.avoid_obstacle_turn_right()
@@ -64,23 +64,11 @@ class car_connection:
                     self.avoid_obstacle_turn_left()
                     print('2')
             else:
-                if (self.y2 - self.y1 > 0.1): # Turn right
-                    print('3'+', '+str(self.y2 - self.y1))
-                    while(abs(self.yaw - self.angle_to_wpt) < 0.1):
-                        i += 1
-                        self.move_car(self.linear_speed, -1 * self.angular_speed)
-
-                elif (self.y2 - self.y1 < -0.1): # Turn left
-                    print('4'+', '+str(self.y2 - self.y1))
-                    while(abs(self.yaw - self.angle_to_wpt) < 0.1):
-                        self.move_car(self.linear_speed, self.angular_speed)
-                    self.straight_to_wpt()
-                
-                else:
-                    print('5')
-                    self.move_car(self.linear_speed, 0)
-                    print("Current position: " + str([self.x1, self.y1])) 
-                    print("Current waypoint: " + str(self.next_waypoint))
+                print('5')
+                self.point_towards_wpt()
+                self.move_car(self.linear_speed, 0)
+                print("Current position: " + str([self.x1, self.y1])) 
+                print("Current waypoint: " + str(self.next_waypoint))
 
     def avoid_obstacle_turn_right(self):
         #while(abs(self.anglesb.data) < 0.79):
@@ -93,36 +81,25 @@ class car_connection:
 
         dx = math.cos(self.anglesb.data) * init_dist
 
-        while(abs(self.anglesb.data) < 0.4):
+        while(abs(self.anglesb.data) < 0.6):
             i += 1
-            self.move_car(self.linear_speed, -1 * self.angular_speed)
+            self.move_car(self.turning_speed, -1 * self.angular_speed)
 
         while(self.x1 < init_x + dx):
             j += 1
             self.move_car(self.linear_speed, 0)
 
         for it in range(2 * i):
-            self.move_car(self.linear_speed, self.angular_speed)
+            self.move_car(self.turning_speed, self.angular_speed)
         
         for jt in range(j):
             self.move_car(self.linear_speed, 0)
 
         i = int(math.ceil(i/2))            
-
-        for it in range(i):
-            self.move_car(self.linear_speed, self.angular_speed)
-            
         
-        time.sleep(10)
-
-        '''
-        x3 = self.x1 + self.distsb.data
-        y3 = self.y1 - self.distsb.data
-
-        # Make new waypoint
-        self.path.insert(0, [[x3, y3]])
-        self.update_vals()
-        '''
+        for it in range(i):
+            self.move_car(self.turning_speed, self.angular_speed)
+        
 
         return
 
@@ -134,27 +111,24 @@ class car_connection:
 
         dx = math.cos(self.anglesb.data) * init_dist
 
-        while(abs(self.anglesb.data) < 0.4):
+        while(abs(self.anglesb.data) < 0.6):
             i += 1
-            self.move_car(self.linear_speed, self.angular_speed)
+            self.move_car(self.turning_speed, self.angular_speed)
 
         while(self.x1 < init_x + dx):
             j += 1
             self.move_car(self.linear_speed, 0)
 
         for it in range(2 * i):
-            self.move_car(self.linear_speed, -1 * self.angular_speed)
+            self.move_car(self.turning_speed, -1 * self.angular_speed)
         
         for jt in range(j):
             self.move_car(self.linear_speed, 0)
 
         i = int(math.ceil(i/2))            
-
-        for it in range(i):
-            self.move_car(self.linear_speed, -1 * self.angular_speed)
-
         
-        time.sleep(10)
+        for it in range(i):
+            self.move_car(self.turning_speed, -1 * self.angular_speed)
         
 
 
@@ -180,6 +154,8 @@ class car_connection:
     
 
     def update_vals(self):
+        self.quaternion2euler()
+
         self.x1 = self.odom.pose.pose.position.x
         self.y1 = self.odom.pose.pose.position.y
 
@@ -196,7 +172,16 @@ class car_connection:
 
         self.hyp = self.euclid_distance(self.x1, self.y1, self.x2, self.y2)
 
-        self.angle_to_wpt = np.arcsin((self.x2 - self.x1)/self.hyp)
+        self.desired_yaw = np.arcsin((self.x2 - self.x1)/self.hyp)
+
+        if (self.y1 - self.y2 < 0.1):
+            self.desired_yaw = 0
+
+        if (abs(self.desired_yaw) - 1.57 < 0.1):
+            if (self.yaw < 0):
+                self.desired_yaw = -1 * abs(self.desired_yaw)
+            else:
+                self.desired_yaw = abs(self.desired_yaw)
 
         self.quaternion2euler()
 
@@ -229,6 +214,19 @@ class car_connection:
         self.yaw = yaw
         
         return yaw
+
+    def point_towards_wpt(self):
+        # self.update_vals()
+        if (self.desired_yaw - self.yaw > 0.1): # Turn right
+            print('adjusting from: '+str(self.yaw)+'\t to: '+str(self.desired_yaw))
+            while (self.desired_yaw - self.yaw > 0.1):
+                self.move_car(self.turning_speed, self.angular_speed)
+        elif (self.desired_yaw - self.yaw < -0.1):
+            print('adjusting from: '+str(self.yaw)+'\t to: '+str(self.desired_yaw))
+            while (self.desired_yaw - self.yaw < -0.1):
+                self.move_car(self.turning_speed, -1 * self.angular_speed)
+        else:
+            return
 
     """
     These are the callback functions of subscribers
