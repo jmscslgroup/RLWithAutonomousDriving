@@ -1,5 +1,6 @@
 <launch>
 
+
 <node name="distanceEstimatorSteeringBased" pkg="catvehicle" type="distanceEstimatorSteeringBased" output="screen">
     <param name="scan_topic" value="/catvehicle/front_laser_points"/>
     <param name="steering_topic" value="/catvehicle/steering"/>
@@ -7,8 +8,8 @@
     <remap from="/catvehicle/distanceEstimatorSteeringBased/Xdist" to="/catvehicle/distanceEstimatorSteeringBased/Xdist" />
     <remap from="/catvehicle/distanceEstimatorSteeringBased/Ydist" to="/catvehicle/distanceEstimatorSteeringBased/Ydist" />
     <remap from="/catvehicle/distanceEstimatorSteeringBased/angle" to="/catvehicle/distanceEstimatorSteeringBased/angle" />
-     <param name="tmin" value="-6.0"/><!-- This is like the xmin in the cartesian windowed estimator -->
-     <param name="tmax" value="3.0"/><!-- This is like the xmax in the cartesian windowed estimator -->
+     <param name="tmin" value="-10.0"/><!-- This is like the xmin in the cartesian windowed estimator -->
+     <param name="tmax" value="10.0"/><!-- This is like the xmax in the cartesian windowed estimator -->
      <param name="smin" value="0.0"/><!-- This is like the ymin in the cartesian windowed estimator -->
      <param name="smax" value="80.0"/><!-- This is like the ymax in the cartesian windowed estimator -->
      <param name="epsilon" value="0.005"/><!-- This is the minimum turning angle for the ring transformation vs a direct cartiesian calculation (to avoid infinite turning radius in calculation) -->
