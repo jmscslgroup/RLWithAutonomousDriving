@@ -11,8 +11,8 @@ class car_connection:
 
     def __init__(self):
         rospy.init_node('car_controls', anonymous=True) 
-        self.distsb_sub = rospy.Subscriber("/catvehicle/distanceEstimatorSteeringBased/dist", Float64, self._distsb_callback)
-        self.anglesb_sub = rospy.Subscriber("/catvehicle/distanceEstimatorSteeringBased/angle", Float64, self._anglesb_callback)
+        self.distsb_sub = rospy.Subscriber("/distanceEstimatorSteeringBased/dist", Float64, self._distsb_callback)
+        self.anglesb_sub = rospy.Subscriber("/distanceEstimatorSteeringBased/angle", Float64, self._anglesb_callback)
         self.odom_sub = rospy.Subscriber("/catvehicle/odom", Odometry, self._odom_callback)
         self.slamodom_sub = rospy.Subscriber("/slam_out_pose", PoseStamped, self._slamodom_callback)
 
@@ -269,12 +269,13 @@ class car_connection:
     """
     These are the callback functions of subscribers
     """
-
+    
     def _distsb_callback(self, data):
         self.distsb = data
     
     def _anglesb_callback(self, data):
         self.anglesb = data
+    
 
     def _odom_callback(self, data):
             self.odom = data
@@ -303,6 +304,7 @@ class car_connection:
             
         return True
 
+    
     def _check_distsb_ready(self):
         self.distsb = None
         rospy.logdebug("Waiting for /catvehicle/distanceEstimatorSteeringBased/dist to be READY...")
@@ -330,6 +332,7 @@ class car_connection:
                 rospy.logerr("Current /catvehicle/distanceEstimatorSteeringBased/angle not ready yet, retrying for getting angle")
 
         return self.anglesb
+    
 
     def _check_odom_ready(self):
         self.odom = None
