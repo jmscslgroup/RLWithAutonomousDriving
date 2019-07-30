@@ -13,10 +13,10 @@ class car_connection:
         rospy.init_node('car_controls', anonymous=True) 
         self.distsb_sub = rospy.Subscriber("/distanceEstimatorSteeringBased/dist", Float64, self._distsb_callback)
         self.anglesb_sub = rospy.Subscriber("/distanceEstimatorSteeringBased/angle", Float64, self._anglesb_callback)
-        self.odom_sub = rospy.Subscriber("/catvehicle/odom", Odometry, self._odom_callback)
+        self.odom_sub = rospy.Subscriber("/odom", Odometry, self._odom_callback)
         #self.slamodom_sub = rospy.Subscriber("/slam_out_pose", PoseStamped, self._slamodom_callback)
 
-        self._cmd_vel_pub = rospy.Publisher('/catvehicle/cmd_vel', Twist, queue_size=10)
+        self._cmd_vel_pub = rospy.Publisher('/catvehicle/cmd_vel/in', Twist, queue_size=10)
 
         self._check_all_systems_ready()
 
@@ -25,11 +25,11 @@ class car_connection:
         self.path = [[self.goal]]
         '''
 
-        self.goal = [self.odom.pose.pose.position.x + 50, self.odom.pose.pose.position.y]
+        self.goal = [self.odom.pose.pose.position.x + 20, self.odom.pose.pose.position.y]
         self.path = [[self.goal]]
         self.last_pt = [0, 0]
 
-        self.linear_speed = 5
+        self.linear_speed = 0.5
         self.turning_speed = 0.5
         self.angular_speed = 0.3
 
@@ -70,10 +70,10 @@ class car_connection:
         self.update_vals()
 
         while (self.euclid_distance(self.x1, self.y1, self.xn, self.yn) > self.epsilon):
-            if (self.distsb.data < 15) and (abs(self.distsb.data - self.old_dist) > 0.01):
+            if (self.distsb.data < 10) and (abs(self.distsb.data - self.old_dist) > 0.01):
                 print('Dists: ' + str(self.old_dist)+' '+str(self.distsb.data) + "Differece: " + str(abs(self.distsb.data - self.old_dist)))
                 self.old_dist = self.distsb.data
-                if (abs(self.anglesb.data) < 0.8):
+                if (abs(self.anglesb.data) < 0.7):
                     if self.anglesb.data < 0: # Obj on left, turn right
                         print('1')
                         self.avoid_obstacle_turn_right()
@@ -102,7 +102,7 @@ class car_connection:
         dx = math.cos(self.anglesb.data) * init_dist
 
         # Turn until object is out of sight
-        while ((abs(self.anglesb.data) < 0.8) or ((self.anglesb.data + 1.57)) <= 0.01):
+        while ((abs(self.anglesb.data) < 7) or ((self.anglesb.data + 1.57)) <= 0.01):
             if ((abs(abs(self.anglesb.data) - 1.57)) <= 0.01):
                 pass
             else:
@@ -117,7 +117,7 @@ class car_connection:
             self.move_car(self.linear_speed, 0)
             self.update_vals()
 
-        if (self.distsb.data < 15) and (abs(self.anglesb.data) < 1):
+        if (self.distsb.data < 10) and (abs(self.anglesb.data) < 1):
             # Readjust yaw
             for it in range(2 * i):
                 self.move_car(self.turning_speed, self.angular_speed)
@@ -146,7 +146,7 @@ class car_connection:
 
         dx = math.cos(self.anglesb.data) * init_dist
 
-        while ((abs(self.anglesb.data) < 0.8) or ((self.anglesb.data + 1.57) <= 0.01)):
+        while ((abs(self.anglesb.data) < 0.7) or ((self.anglesb.data + 1.57) <= 0.01)):
             if (abs(abs(self.anglesb.data - 1.57) <= 0.01)):
                 pass
             else:
@@ -161,7 +161,7 @@ class car_connection:
             self.update_vals()
 
         
-        if (self.distsb.data < 15) and (abs(self.anglesb.data) < 0.8):
+        if (self.distsb.data < 10) and (abs(self.anglesb.data) < 0.7):
             for it in range(2 * i):
                 self.move_car(self.turning_speed, -1 * self.angular_speed)
             
@@ -395,15 +395,15 @@ class car_connection:
 
     def _check_odom_ready(self):
         self.odom = None
-        rospy.logdebug("Waiting for /catvehicle/odom to be READY...")
+        rospy.logdebug("Waiting for /odom to be READY...")
         while self.odom is None and not rospy.is_shutdown():
             try:
-                self.odom = rospy.wait_for_message("/catvehicle/odom", Odometry, timeout=5.0)
-                rospy.logdebug("Current /catvehicle/odom READY=>")
+                self.odom = rospy.wait_for_message("/odom", Odometry, timeout=5.0)
+                rospy.logdebug("Current /odom READY=>")
 
             except:
                 print("odom: " +  str(self.odom) + ", rospy.is_shutdown(): " + str(rospy.is_shutdown))
-                rospy.logerr("Current /catvehicle/odom not ready yet, retrying for getting odom")
+                rospy.logerr("Current /odom not ready yet, retrying for getting odom")
     '''
     def _check_slamodom_ready(self):
         self.slamodom = None

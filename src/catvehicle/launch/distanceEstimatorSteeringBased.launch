@@ -8,12 +8,18 @@
     <remap from="/catvehicle/distanceEstimatorSteeringBased/Xdist" to="/catvehicle/distanceEstimatorSteeringBased/Xdist" />
     <remap from="/catvehicle/distanceEstimatorSteeringBased/Ydist" to="/catvehicle/distanceEstimatorSteeringBased/Ydist" />
     <remap from="/catvehicle/distanceEstimatorSteeringBased/angle" to="/catvehicle/distanceEstimatorSteeringBased/angle" />
-     <param name="tmin" value="-10.0"/><!-- This is like the xmin in the cartesian windowed estimator -->
-     <param name="tmax" value="10.0"/><!-- This is like the xmax in the cartesian windowed estimator -->
+     <param name="tmin" value="-3.5"/><!-- This is like the xmin in the cartesian windowed estimator -->
+     <param name="tmax" value="3.5"/><!-- This is like the xmax in the cartesian windowed estimator -->
      <param name="smin" value="0.0"/><!-- This is like the ymin in the cartesian windowed estimator -->
      <param name="smax" value="80.0"/><!-- This is like the ymax in the cartesian windowed estimator -->
      <param name="epsilon" value="0.005"/><!-- This is the minimum turning angle for the ring transformation vs a direct cartiesian calculation (to avoid infinite turning radius in calculation) -->
 
+</node>
+
+<node name="obstacleStoppercatvehicle" pkg="obstaclestopper" type="obstaclestopper_node" output="screen">
+    <remap from="/cmd_vel" to="/catvehicle/cmd_vel/in"/>
+    <remap from="/cmd_vel_safe" to="/catvehicle/cmd_vel"/>
+    <remap from="/vel" to="/catvehicle/vel"/>
 </node>
 
 </launch>
