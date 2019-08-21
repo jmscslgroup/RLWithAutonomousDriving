@@ -1,8 +1,0 @@
-prefix=/home/reu-cat/catkin_ws/devel
-
-Name: follow_line_tc_pkg
-Description: Description of follow_line_tc_pkg
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/reu-cat/catkin_ws/devel/lib 
-Requires: 
